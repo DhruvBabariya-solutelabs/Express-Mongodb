@@ -5,8 +5,10 @@ import errorController from './controllers/error.js'
 
 import adminRoutes from './routes/admin.js';
 import shopRoutes from './routes/shop.js';
-import mongoConnect from './util/database.js';
+//import mongoConnect from './util/database.js';
 import User from './models/user.js';
+import mongoose from 'mongoose';
+
 
 const app = express();
 
@@ -14,12 +16,12 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(path.dirname(process.cwd()),'Express-js','public')));
+app.use(express.static(path.join(path.dirname(process.cwd()),'express-mongodb','public')));
 
 app.use((req,res,next)=>{
-    User.findById('64212db73be0fc18588aa6e5')
+    User.findById('6421d1691ac994ba3e2c7e41')
         .then(user=>{
-            req.user = new User(user.name,user.email,user.cart,user._id);
+            req.user = user;
             next();
         })
 })
@@ -29,8 +31,24 @@ app.use(shopRoutes.router);
 
 app.use(errorController.get404);
 
- mongoConnect.mongoConnect(() =>{
-    app.listen(2000, ()=>{
-        console.log("Server Started....");
+mongoose.connect('mongodb+srv://dhruvbabariya912001:1Qgtr12DHk0qWzqr@firstcluster.hexiesz.mongodb.net/shop?retryWrites=true&w=majority')
+    .then(() =>{
+        User.findOne()
+        .then(user =>{
+            if(!user){
+                const user = new User();
+                user.name = "Dhruv";
+                user.email = "dhruv123@gmail.com";
+                user.cart = {
+                    items : []
+                };
+                user.save().then(()=>{
+                    console.log("UserCreated");
+                })
+            }
+        })
+        app.listen(2000, ()=>{
+            console.log("Server Started....");
     })
 });
+
