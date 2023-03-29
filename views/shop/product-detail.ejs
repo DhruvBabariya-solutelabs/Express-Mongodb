@@ -12,7 +12,8 @@
                 </div>
                 <h2><%=product.price%></h2>
                 <p><%=product.description%></p>
-                <%- include('../includes/addtocart.ejs')%>
-
+                <%if(isLoggedIn){%>
+                    <%- include('../includes/addtocart.ejs')%>
+                <%}%>
             </main>
         <%- include('../includes/end.ejs') %>

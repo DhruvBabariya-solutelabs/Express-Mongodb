@@ -34,7 +34,7 @@ const postAddProduct = (req, res, next) => {
 };
 
 const getProducts = (req, res, next) => {
-  Product.find()
+  Product.find({userId : req.user._id})
     .then(products =>{
       res.render('admin/products', {
         prods: products,

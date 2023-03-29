@@ -7,6 +7,9 @@
             <li class="main-header__item">
                 <a class="<%= path === '/products' ? 'active' : '' %>" href="/products">Products</a>
             </li>
+
+            <% if(isLoggedIn){%>
+
             <li class="main-header__item">
                 <a class="<%= path === '/cart' ? 'active' : '' %>" href="/cart">Cart</a>
             </li>
@@ -21,6 +24,29 @@
                 <a class="<%= path === '/admin/products' ? 'active' : '' %>" href="/admin/products">Admin Products
                 </a>
             </li>
+            <%}%>
+            <%if(!isLoggedIn){%>
+            <ul class = main-header_item-list>
+                <li class="main-header__item">
+                    <a class="<%= path === '/login' ? 'active' : '' %>" href="/login">Login</a>
+                </li>
+            </ul>
+                <ul class = main-header_item-list>
+                <li class="main-header__item">
+                    <a class="<%= path === '/signup' ? 'active' : '' %>" href="/signup">Signup</a>
+                </li>
+            </ul>
+            
+            <%}else{%>
+            <ul class = main-header_item-list>
+                <li class="main-header__item">
+                    <form action="/logout" method="post">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken%>">
+                        <button type="submit">Logout</button>
+                    </form>
+                </li>
+            </ul>
+            <%}%>
         </ul>
     </nav>
 </header>

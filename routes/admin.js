@@ -1,26 +1,19 @@
 import express from 'express';
-
+import isAuth from '../middleware/is-auth.js';
 import adminController from '../controllers/admin.js';
 
 const router = express.Router();
 
-// /admin/add-product => GET
+router.get('/edit-products/:productId',isAuth,adminController.editProduct);
 
- router.get('/edit-products/:productId',adminController.editProduct);
+router.get('/edit-product',isAuth, adminController.getAddProduct);
 
-router.get('/edit-product', adminController.getAddProduct);
+router.get('/products',isAuth, adminController.getProducts);
 
-// /admin/products => GET
- router.get('/products', adminController.getProducts);
+router.post('/edit-product',isAuth, adminController.postAddProduct);
 
-// /admin/add-product => POST
-router.post('/edit-product', adminController.postAddProduct);
+router.post('/update-product',isAuth,adminController.updateProduct);
 
-router.post('/update-product',adminController.updateProduct);
-
-router.post('/delete-product',adminController.postDeleteProduct);
-
-
-
+router.post('/delete-product',isAuth,adminController.postDeleteProduct);
 
 export default  {router};
