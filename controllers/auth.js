@@ -1,15 +1,18 @@
 import bcrypt from 'bcryptjs';
 import User from "../models/user.js";
+import dotenv  from 'dotenv';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
     secure: false, // upgrade later with STARTTLS
     auth: {
-        user: 'infothenursery01@gmail.com', 
-        pass: 'etsqmvuqygskkyzy'
+        user: process.env.MAIL_ID, 
+        pass: process.env.MAIL_PASS
     },
   });
 

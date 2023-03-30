@@ -6,6 +6,7 @@ import session from 'express-session';
 import { default as connectMongoDBSession} from 'connect-mongodb-session';
 import csrf from 'csurf';
 import flash from 'connect-flash';
+import dotenv from 'dotenv'
 
 import adminRoutes from './routes/admin.js';
 import shopRoutes from './routes/shop.js';
@@ -13,13 +14,13 @@ import authRouter from './routes/auth.js';
 import User from './models/user.js';
 import mongoose from 'mongoose';
 
-const MONGODB_URI = 'mongodb+srv://dhruvbabariya912001:1Qgtr12DHk0qWzqr@firstcluster.hexiesz.mongodb.net/shop?retryWrites=true&w=majority' 
+dotenv.config();
+
 const app = express();
 const csrfProtection = csrf();
 const MongoDBStore = connectMongoDBSession(session);
-
 const store = new MongoDBStore({
-    uri : MONGODB_URI,
+    uri : process.env.MONGODB_URI,
     collection : 'sessions',
 });
 
@@ -60,7 +61,7 @@ app.use(shopRoutes.router);
 app.use(authRouter.router);
 app.use(errorController.get404);
 
-mongoose.connect(MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI)
     .then(() =>{
         app.listen(2000, ()=>{
             console.log("Server Started....");
