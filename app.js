@@ -7,6 +7,7 @@ import { default as connectMongoDBSession} from 'connect-mongodb-session';
 import csrf from 'csurf';
 import flash from 'connect-flash';
 import dotenv from 'dotenv'
+import multer from 'multer';
 
 import adminRoutes from './routes/admin.js';
 import shopRoutes from './routes/shop.js';
@@ -27,8 +28,32 @@ const store = new MongoDBStore({
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
+const fileStorage = multer.diskStorage({
+    destination: (req,file,cb)=>{
+        cb(null,'images');
+    },
+    filename : (req,file,cb)=>{
+        const currentDate = new Date().toISOString().slice(0,10);
+        cb(null, currentDate +'-'+file.originalname);
+    }
+
+})
+
+const fileFilter = (req,file,cb)=>{
+    if(file.mimetype === 'image/png' ||
+       file.mimetype === 'image/jpg' ||
+       file.mimetype === 'image/jpeg'
+    ) {
+        cb(null,true);
+      }else{
+        cb(null,false);
+      }
+}
+
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(multer({storage: fileStorage, fileFilter : fileFilter}).single('image'));
 app.use(express.static(path.join(path.dirname(process.cwd()),'express-mongodb','public')));
+app.use('/images',express.static(path.join(path.dirname(process.cwd()),'express-mongodb','images')));
 app.use(session({
     secret:'my secret',
     resave : false, 
@@ -40,6 +65,13 @@ app.use(csrfProtection);
 app.use(flash());
 
 app.use((req,res,next)=>{
+    res.locals.isLoggedIn = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();
+})
+
+
+app.use((req,res,next)=>{
     if(!req.session.user){
         return next();
     }
@@ -48,18 +80,29 @@ app.use((req,res,next)=>{
             req.user = user;
             next();
     })
+    .catch(err => {
+        const error = new Error(err);
+      error.httpStatusCode(500);
+      return next(error);
+    });
 })
-app.use((req,res,next)=>{
-    res.locals.isLoggedIn = req.session.isLoggedIn;
-    res.locals.csrfToken = req.csrfToken();
-    next();
-})
-
 
 app.use('/admin', adminRoutes.router);
 app.use(shopRoutes.router);
 app.use(authRouter.router);
+
+app.get('/500',errorController.get500);
 app.use(errorController.get404);
+
+app.use((error,req,res,next)=>{
+    console.log('error'+req.session.isLoggedIn);
+    res.render('500', 
+    {
+        pageTitle: 'Server Error', 
+        path: '/500',
+        isLoggedIn : req.session.isLoggedIn
+    });
+});
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() =>{

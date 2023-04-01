@@ -1,4 +1,6 @@
 import Product from '../models/product.js'
+import {validationResult} from 'express-validator';
+import deleteFile from '../util/file.js';
 
 const getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
@@ -7,15 +9,52 @@ const getAddProduct = (req, res, next) => {
     formsCSS: true,
     productCSS: true,
     activeAddProduct: true,
-    editing : false
+    editing : false,
+    hasError:false,
+    errorMessage:null,
+    validationErrors :[]
   });
 };
 
 const postAddProduct = (req, res, next) => {
   const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
+  const image = req.file;
   const price = req.body.price;
   const description = req.body.description;
+  const errors = validationResult(req);
+  
+  if(!image){
+    return res.status(422).render('admin/edit-product', {
+      pageTitle: 'Add Product',
+      path: '/edit-product',
+      editing : false,
+      hasError:true,
+      product : {
+        title : title,
+        price : price,
+        description : description
+      },
+      errorMessage : "Please enter valid image type",
+      validationErrors : []
+    }) 
+  }
+  const imageUrl = image.path;
+  if(!errors.isEmpty()){
+    return res.status(422).render('admin/edit-product', {
+      pageTitle: 'Add Product',
+      path: '/edit-product',
+      editing : false,
+      hasError:true,
+      product : {
+        title : title,
+        price : price,
+        description : description
+      },
+      errorMessage : errors.array()[0].msg,
+      validationErrors : errors.array()
+    })
+  }
+
   const product = new Product({
     title : title,
     imageUrl : imageUrl,
@@ -28,8 +67,9 @@ const postAddProduct = (req, res, next) => {
     console.log("Product Created");
     res.redirect('/');
   })
-  .catch((err)=>{
-    console.log(err);
+  .catch(err=>{
+    const error = new Error(err);
+    return next(err);
   })
 };
 
@@ -43,7 +83,9 @@ const getProducts = (req, res, next) => {
       });
     })
     .catch(err=>{
-      console.log(err);
+      const error = new Error(err);
+     
+      return next(error);
     })
 };
 
@@ -59,23 +101,51 @@ const editProduct =(req,res,next)=>{
       pageTitle: 'Edit Product',
       path: '/edit-product',
       editing : editing,
-      product : product
+      product : product,
+      hasError:false,
+      errorMessage : null,
+      validationErrors:[]
     })
   })
-  .catch(err => console.log(err));
+  .catch(err=>{
+    const error = new Error(err);
+    next(error);
+  })
 }
 
 const updateProduct = (req,res,next)=>{
   const prodId= req.body.productId;
   const updatedTitle = req.body.title;
-  const updatedImageUrl = req.body.imageUrl;
+  const image = req.file;
   const updatedPrice = req.body.price;
   const updatedDescription = req.body.description;
+
+  const errors = validationResult(req);
+
+  if(!errors.isEmpty()){
+    return res.status(422).render('admin/edit-product', {
+      pageTitle: 'Edit Product',
+      path: '/edit-product',
+      editing : true,
+      hasError:true,
+      product : {
+        title : updatedTitle,
+        price : updatedPrice,
+        description : updatedDescription,
+        _id :prodId
+      },
+      errorMessage : errors.array()[0].msg,
+      validationErrors: errors.array()
+    })
+  }
 
   Product.findById(prodId.trim()).then(product =>{
      product.title = updatedTitle;
      product.price = updatedPrice;
-     product.imageUrl = updatedImageUrl;
+     if(image){
+        deleteFile(product.imageUrl);
+        product.imageUrl = image.path
+     }
      product.description = updatedDescription
      product.userId = req.user;
      return product.save()
@@ -84,19 +154,31 @@ const updateProduct = (req,res,next)=>{
       console.log("PRODUCT UPDATED");
       res.redirect('/admin/products');
     })
-    .catch(err => {
-      console.log(err);
-    });
+    .catch(err=>{
+      const error = new Error(err);
+      return next(error);
+    })
 }
 
 const postDeleteProduct  =(req,res,next)=>{
-   const prodId = req.body.productId;
-  Product.findByIdAndRemove(prodId)
+   const prodId = req.params.productId;
+   Product.findById(prodId)
+   .then(product =>{
+    if(!product){
+      return next(new Error('Product Not Found'));
+    }
+    deleteFile(product.imageUrl);
+    return Product.deleteOne({_id:prodId,userId : req.user._id});
+  })
     .then(result =>{
       console.log("PRODUCT DELETED");
       res.redirect('/admin/products');
     })
-    .catch(err => console.log(err));
+    .catch(err=>{
+      console.log(err);
+      const error = new Error(err);
+      return next(error);
+    })
 }
 export default({getAddProduct,postAddProduct,getProducts,editProduct,
                   updateProduct,postDeleteProduct});

@@ -3,6 +3,7 @@ import User from "../models/user.js";
 import dotenv  from 'dotenv';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import { validationResult } from 'express-validator';
 
 dotenv.config();
 
@@ -27,36 +28,73 @@ const getLoginPage = (req,res,next)=>{
     res.render('auth/login', {
         pageTitle: 'Login',
         path: '/login',
-        errorMessage : message
+        errorMessage : message,
+        oldInput : {
+            email : '',
+            password : ''
+        },
+        validationErrors:[]
       });
 }
 
 const postLogin = (req,res,next)=>{
     const email = req.body.email;
     const password = req.body.password;
+    const errors = validationResult(req);
+    console.log(errors);
+    if(!errors.isEmpty()){
+        return res.status(422).render('auth/login', {
+            pageTitle: 'Login',
+            path: '/login',
+            errorMessage : errors.array()[0].msg,
+            oldInput : {
+                email : email,
+                password : password
+            },
+            validationErrors: errors.array()
+        });
+    }
     User.findOne({email : email})
         .then(user=>{
             if(!user){
-                req.flash('error','Invalid email or password');
-                return res.redirect('/login');
+                return res.status(422).render('auth/login', {
+                    pageTitle: 'Login',
+                    path: '/login',
+                    errorMessage : "Invalid email or password",
+                    oldInput : {
+                        email : email,
+                        password : password
+                    },
+                    validationErrors: errors.array()
+                });
             }
             bcrypt.compare(password,user.password)
             .then(doMatch =>{
                 if(doMatch){
                     req.session.user = user;
-                    req.session.isLoggedIn =true;
+                    req.session.isLoggedIn = true;
                     return req.session.save(err =>{
                         console.log(err);
                         res.redirect('/');
                     });
                 }
-                req.flash('error','Invalid email or password');
-                res.redirect('/login');
+                return res.status(422).render('auth/login', {
+                    pageTitle: 'Login',
+                    path: '/login',
+                    errorMessage : "Invalid email or password",
+                    oldInput : {
+                        email : email,
+                        password : password
+                    },
+                    validationErrors: errors.array()
+                });
             })
     })
-    .catch(err =>{
-        console.log(err);
-    })
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode(500);
+        return next(error);
+      })
     
 }
 
@@ -77,7 +115,13 @@ const getSignup =(req,res,next)=>{
     res.render('auth/signup', {
         pageTitle: 'Signup',
         path: '/signup',
-        errorMessage : message
+        errorMessage : message,
+        oldInput : {
+            email : '',
+            password :'',
+            confirmPassword :''
+        },
+        validationErrors:[]
     });
 }
 
@@ -85,13 +129,21 @@ const postSignup = (req,res,next)=>{
     const email = req.body.email;
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
-    User.findOne({email : email})
-    .then(userDocs => {
-        if(userDocs){
-            req.flash('error','Email is already exists..');
-            return res.redirect('/signup');
-        }
-        return bcrypt.hash(password,12)
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        return res.status(422).render('auth/signup', {
+            pageTitle: 'Signup',
+            path: '/signup',
+            errorMessage : errors.array()[0].msg,
+            oldInput : {
+                email : email,
+                password :password,
+                confirmPassword :confirmPassword
+            },
+            validationErrors : errors.array()
+        });
+    }
+        bcrypt.hash(password,12)
         .then(encrptPassword =>{
             const user = new User({
                 email : email,
@@ -112,8 +164,11 @@ const postSignup = (req,res,next)=>{
                 console.log(err);
             })  
         })
-    })
-    .catch(err => console.log(err));
+        .catch(err=>{
+            const error = new Error(err);
+            error.httpStatusCode(500);
+            return next(error);
+          })
 }
 
 const getReset = (req,res,next)=>{
@@ -163,7 +218,11 @@ const postReset = (req,res,next)=>{
             })
             res.redirect('/');  
         })
-        .catch(err => console.log(err));
+        .catch(err=>{
+            const error = new Error(err);
+            error.httpStatusCode(500);
+            return next(error);
+          })
     })
 }
 
@@ -211,7 +270,11 @@ const postNewPassword = (req,res,next) =>{
     .then(result =>{
         res.redirect('/login');
     })
-    .catch(err => console.log(err));
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode(500);
+        return next(error);
+      })
 }
 export default {getLoginPage,postLogin,postLogout,getSignup,
     postSignup,getReset,postReset,getpasswordform,postNewPassword};
