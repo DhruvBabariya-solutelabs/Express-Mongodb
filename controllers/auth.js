@@ -212,7 +212,7 @@ const postReset = (req,res,next)=>{
                 subject: 'Reset Your Password',
                 html: `
                 <p> You requested a password reset</p>
-                <p> Click this <a href="http://localhost:2000/reset/${token}">link</a> to set a New Password</p>
+                <p> Click this <a href="https://shop-webapp.cyclic.app/reset/${token}">link</a> to set a New Password</p>
                 `}, err =>{
                 console.log(err);
             })
