@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import express from 'express';
 import bodyParser from 'body-parser';
 import errorController from './controllers/error.js';
@@ -8,7 +9,10 @@ import csrf from 'csurf';
 import flash from 'connect-flash';
 import dotenv from 'dotenv'
 import multer from 'multer';
-
+import helmet from 'helmet';
+import compression from 'compression';
+import morgan from 'morgan';
+import https from 'https';
 import adminRoutes from './routes/admin.js';
 import shopRoutes from './routes/shop.js';
 import authRouter from './routes/auth.js';
@@ -19,6 +23,11 @@ dotenv.config();
 
 const app = express();
 const csrfProtection = csrf();
+
+const privateKey = fs.readFileSync('server.key');
+const certificate = fs.readFileSync('server.cert');
+
+
 const MongoDBStore = connectMongoDBSession(session);
 const store = new MongoDBStore({
     uri : process.env.MONGODB_URI,
@@ -49,6 +58,15 @@ const fileFilter = (req,file,cb)=>{
         cb(null,false);
       }
 }
+
+const accessLogStream = fs.createWriteStream(path.join(path.dirname(process.cwd()),
+                            'express-mongodb','access.log'),{flags : 'a'});
+
+
+//app.use(helmet());
+app.use(compression());
+app.use(morgan('combined',{stream: accessLogStream}));
+
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(multer({storage: fileStorage, fileFilter : fileFilter}).single('image'));
@@ -106,7 +124,8 @@ app.use((error,req,res,next)=>{
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() =>{
-        app.listen(2000, ()=>{
+    //    https.createServer({key : privateKey,cert: certificate},app)
+       app.listen(2000, ()=>{
             console.log("Server Started....");
     })
 });
