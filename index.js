@@ -59,13 +59,13 @@ const fileFilter = (req,file,cb)=>{
       }
 }
 
-const accessLogStream = fs.createWriteStream(path.join(path.dirname(process.cwd()),
-                            'express-mongodb','access.log'),{flags : 'a'});
+// const accessLogStream = fs.createWriteStream(path.join(path.dirname(process.cwd()),
+//                             'express-mongodb','access.log'),{flags : 'a'});
 
 
 //app.use(helmet());
 app.use(compression());
-app.use(morgan('combined',{stream: accessLogStream}));
+// app.use(morgan('combined',{stream: accessLogStream}));
 
 
 app.use(bodyParser.urlencoded({ extended: false }));
