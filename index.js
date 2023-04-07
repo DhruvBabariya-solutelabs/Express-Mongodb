@@ -70,8 +70,8 @@ app.use(compression());
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(multer({storage: fileStorage, fileFilter : fileFilter}).single('image'));
-app.use(express.static(path.join(path.dirname(process.cwd()),'express-mongodb','public')));
-app.use('/images',express.static(path.join(path.dirname(process.cwd()),'express-mongodb','images')));
+app.use(express.static(path.join(path.dirname(process.cwd()),'public')));
+app.use('/images',express.static(path.join(path.dirname(process.cwd()),'images')));
 app.use(session({
     secret:'my secret',
     resave : false, 
