@@ -24,10 +24,12 @@
                 type="password" name="password" id="password" value="<%= oldInput.password%>">
             </div>
             <input type="hidden" name="_csrf" value="<%= csrfToken%>">
-            <button class="btn" type="submit">Login</button>  
+            <div class="centered"><button class="btn" type="submit">Login</button></div>  
         </form>
+        <br>
         <div class="centered">
-            <a href='/reset'>Forgot Password?</a>
+            <a href='/reset'>Forgot Password?</a><br><br>
+            <a href='/signup'>Don't have a account?</a>
         </div>
     </main>
 <%- include('../includes/end.ejs') %>

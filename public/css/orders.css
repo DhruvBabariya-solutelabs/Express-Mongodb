@@ -27,3 +27,37 @@
     border: 1px solid #00695c;
     color: #00695c;
 }
+
+
+.orders__products-item-img{
+  height: 3rem;
+}
+
+
+
+.order-total{
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  /* border: 1px solid #00695c; */
+  color: #2C3333;
+  display: flex;
+  justify-content: space-between;
+}
+
+.order-total-items{
+  display: flex;
+}
+
+.order-total-cost{
+  display: flex;
+  align-items:flex-end;
+}
+
+.order-total-xyz{
+   display: flex;
+}
+
+.order-total-xyz button{
+  display: flex;
+  
+}

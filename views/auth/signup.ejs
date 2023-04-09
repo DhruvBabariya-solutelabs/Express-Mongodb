@@ -17,6 +17,22 @@
                 type="email" name="email" id="email" value="<%= oldInput.email%>">
             </div>
             <div class="form-control">
+                <label for="name">Enter Full Name</label>
+                <input class="<%= validationErrors.find(e => e.param === 'name') ? 'invalid' : '' %>"
+                type="text" name="name" id="email" value="<%= oldInput.name%>">
+            </div>
+            <div class="form-control">
+                <label for="contact">Enter Contact No.</label>
+                <input class="<%= validationErrors.find(e => e.param === 'contact') ? 'invalid' : '' %>"
+                type="number" name="contact" id="email" value="<%= oldInput.contact%>">
+            </div>
+            <div class="form-control">
+                <label for="address">Address</label>
+                <textarea 
+                class="<%= validationErrors.find(e => e.param === 'address') ? 'invalid' : '' %>"
+                name="address" id="description" rows="3"><%=oldInput.address %></textarea>
+            </div>
+            <div class="form-control">
                 <label for="password">Password</label>
                 <input class="<%= validationErrors.find(e => e.param === 'password') ? 'invalid' : '' %>"
                 type="password" name="password" id="password" value="<%= oldInput.password%>">
@@ -27,7 +43,9 @@
                 type="password" name="confirmPassword" id="confirmPassword" value="<%= oldInput.confirmPassword%>">
             </div>
             <input type="hidden" name="_csrf" value="<%= csrfToken%>">
+            <div class="centered">
             <button class="btn" type="submit">Signup</button>
+        </div>
         </form>
     </main>
 <%- include('../includes/end.ejs') %>
