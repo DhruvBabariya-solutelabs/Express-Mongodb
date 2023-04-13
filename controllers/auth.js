@@ -228,7 +228,7 @@ const postReset = (req, res, next) => {
             html: `
                 <p> You requested a password reset</p>
                 <p>This link is avilable only 1 Hours of generating link</p>
-                <p> Click this <a href="https://localhost:2000/reset/${token}">link</a> to set a New Password</p>
+                <p> Click this <a href="https://onlineshop-2.onrender.com/reset/${token}">link</a> to set a New Password</p>
                 `,
           },
           (err) => {
