@@ -1,6 +1,7 @@
 import Product from "../models/product.js";
 import { validationResult } from "express-validator";
 import deleteFile from "../util/file.js";
+import order from "../models/order.js";
 
 const getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -73,14 +74,29 @@ const postAddProduct = (req, res, next) => {
       return next(err);
     });
 };
-
+const ITEM_PER_PAGE = 3;
 const getProducts = (req, res, next) => {
+  const page = +req.query.page || 1;
+  let totalItem;
   Product.find()
+    .countDocuments()
+    .then((numProducts) => {
+      totalItem = numProducts;
+      return Product.find()
+        .skip((page - 1) * ITEM_PER_PAGE)
+        .limit(ITEM_PER_PAGE);
+    })
     .then((products) => {
       res.render("admin/products", {
         prods: products,
         pageTitle: "Admin Products",
         path: "/admin/products",
+        currentPage: page,
+        hasNextPage: ITEM_PER_PAGE * page < totalItem,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItem / ITEM_PER_PAGE),
       });
     })
     .catch((err) => {
@@ -183,6 +199,26 @@ const postDeleteProduct = (req, res, next) => {
       return next(error);
     });
 };
+const getAllOrders = (req, res, next) => {
+  order
+    .find()
+    .populate("user.userId")
+    .then((orders) => {
+      res.render("admin/listoforders", {
+        pageTitle: "All orders",
+        path: "/admin/listoforders",
+        formsCSS: true,
+        productCSS: true,
+        activeAddProduct: true,
+        orders: orders,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      const error = new Error(err);
+      return next(error);
+    });
+};
 export default {
   getAddProduct,
   postAddProduct,
@@ -190,4 +226,5 @@ export default {
   editProduct,
   updateProduct,
   postDeleteProduct,
+  getAllOrders,
 };
