@@ -242,9 +242,9 @@ const getInvoices = (req, res, next) => {
       if (!order) {
         return next(new Error("No Order Found"));
       }
-      if (order.user.userId.toString() !== req.user._id.toString()) {
-        return next("Unauthorized");
-      }
+      // if (order.user.userId.toString() !== req.user._id.toString()) {
+      //   return next("Unauthorized");
+      // }
       const invoiceName = "invoice-" + orderid + ".pdf";
       const invoicePath = path.join("data", "invoices", invoiceName);
       const pdfDoc = new PDFDocument();
