@@ -22,7 +22,7 @@
                         <li class="orders__products-item">
                         <%= p.product.title %> 
                         (<%= p.quantity %>) - ₹<%= p.product.price %>
-                         <img class="orders__products-item-img" src="<%= p.product.imageUrl %>" alt="<%= p.product.title %>" ></li>                    
+                         <img class="orders__products-item-img" src="/<%= p.product.imageUrl %>" alt="<%= p.product.title %>" ></li>                    
                     <% }); %>
                     <% const user = order.user.userId %>
                     <li> Name = <%=user.name %></li>
